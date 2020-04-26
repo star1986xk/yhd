@@ -1,0 +1,19 @@
+CREATE SCHEMA `yhd` ;
+use yhd;
+CREATE TABLE `yhd`.`items_table` (
+  `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+  `uid` int NOT NULL COMMENT '爬虫id',
+  `skuId` NVARCHAR(50) NOT NULL COMMENT '商品id',
+  `title` NVARCHAR(200) NOT NULL COMMENT '标题',
+  `money` float NOT NULL COMMENT '价格',
+  `class1` nvarchar(50) NULL COMMENT '一级分类',
+  `class2` nvarchar(50) NULL COMMENT '二级分类',
+  `class3` nvarchar(50) NULL COMMENT '三级分类',
+  `shop` nvarchar(200) NULL COMMENT '店铺',
+  `averageScore` int NULL COMMENT '平均分',
+  `sales` int NULL COMMENT '销售量',
+  `goodCount` int NULL COMMENT '好评数',
+  `generalCount` int NULL COMMENT '中评数',
+  `poorCount` int NULL COMMENT '差评数',
+  `url` nvarchar(200) NULL COMMENT 'url'
+);
