@@ -3,7 +3,7 @@ matplotlib.use("Qt5Agg")  # 声明使用QT5
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import pylab as mpl
-from matplotlib import pyplot as plt, style
+from matplotlib import style
 
 # 创建一个matplotlib图形绘制类
 class MyFigure(FigureCanvas):
