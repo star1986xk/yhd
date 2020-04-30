@@ -8,22 +8,27 @@ import json
 from db_class import db_class
 from PyQt5.QtCore import QThread
 from threading import Thread
+from PyQt5.QtCore import pyqtSignal
 
 
 # 搜索类
-class search(QThread):
-    def __init__(self, url_class=None, page_count=None, thread_count=None):
+class search_class(QThread):
+    sig_one_end = pyqtSignal(str)
+    sig_end = pyqtSignal(str)
+
+    def __init__(self, url_class_list=None, page_count=None, thread_count=None):
         '''
         初始化
         :param url_class: 类型url
         :param page_count: 查询页数
         :param thread_count: 线程数
         '''
-        super(search, self).__init__()
+        super(search_class, self).__init__()
         self.flag = True
-        self.url_class = url_class
+        self.url_class_list = url_class_list
         self.page_count = int(page_count) + 1
         self.thread_count = int(thread_count)
+        self.uid = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
     def requestGET(self, url, headers):
         '''
@@ -59,7 +64,7 @@ class search(QThread):
                 shops = html.xpath('//span[@class="shop_text"]/text()')
                 for skuId, money, title, shop in zip(skuIds, moneys, titles, shops):
                     obj = copy.deepcopy(item_obj)
-                    obj['uid'] = str(int(time.time()))
+                    obj['uid'] = self.uid
                     obj['skuId'] = skuId
                     obj['title'] = title
                     obj['money'] = money
@@ -67,7 +72,9 @@ class search(QThread):
                     obj['url'] = url_item.format(skuId)
                     obj = self.parser_item(obj)
                     if obj:
-                        db.insert_many(table_name, [obj])
+                        if db.insert_many(table_name, [obj]):
+                            self.sig_one_end.emit(
+                                '抓取成功：' + obj['title'] + ' ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         except Exception as e:
             print(e)
         finally:
@@ -107,22 +114,20 @@ class search(QThread):
         :return:
         '''
         try:
-            for i in range(1, self.page_count, self.thread_count):
-                if self.flag:
-                    self.result = []
-                    self.task_list = [Thread(target=self.parser_index, args=(self.url_class + url_index.format(n),)) for
-                                      n in range(i, i + self.thread_count)]
-                    [task.start() for task in self.task_list]
-                    [task.join() for task in self.task_list]
-                    time.sleep(1)
+            for url_class in self.url_class_list:
+                for i in range(1, self.page_count, self.thread_count):
+                    if self.flag:
+                        self.result = []
+                        self.task_list = [Thread(target=self.parser_index, args=(url_class + url_index.format(n),)) for
+                                          n in range(i, i + self.thread_count)]
+                        [task.start() for task in self.task_list]
+                        [task.join() for task in self.task_list]
+                        time.sleep(1)
         except Exception as e:
             print(e)
+        finally:
+            self.sig_end.emit('运行结束！ ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
     # 执行函数
     def run(self):
         self.thread_pool()
-
-
-if __name__ == '__main__':
-    search_obj = search(class1_dict['饼干糕点'], 5, 5)
-    search_obj.start()

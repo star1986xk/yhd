@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>ico/终极蜘蛛侠.png</file>
+    <file>ico/分析.png</file>
+    <file>ico/3D眼镜.png</file>
+    <file>ico/删除.png</file>
+    <file>ico/数据.png</file>
+  </qresource>
+</RCC>

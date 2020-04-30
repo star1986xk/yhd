@@ -44,7 +44,7 @@ class db_class():
             print(e)
             return None
 
-    def select_count_condition(self, table_name,condition):
+    def select_count_condition(self, table_name, condition):
         '''
         条件查询\n
         如:select * from table1 where id=1 and name='xx';\n
@@ -82,9 +82,9 @@ class db_class():
             print(e)
             return None
 
-    def select_like(self, table_name, key, value):
+    def select_uid(self, table_name):
         try:
-            self._sql = "SELECT * FROM " + table_name + " WHERE " + key + " like '" + value + "';"
+            self._sql = "select distinct uid from " + table_name + ";"
             self.cursor.execute(self._sql)
             result = self.cursor.fetchall()
             return result
@@ -92,13 +92,99 @@ class db_class():
             print(e)
             return None
 
-    def select_LIMIT(self, table_name, start, end):
+    def select_group_sum(self, table_name, uid_list, group_name, sum_name):
+        '''
+        分组查询求和
+        :param table_name: 表名
+        :param uid_list: 抓取id的列表
+        :param group_name:分组字段
+        :param sum_name:求和字段
+        :return:查询结果
+        '''
         try:
-            self._sql = 'SELECT top ' + end + ' * from ' + table_name + ' where IsChange=0 and id not in (SELECT top ' + start + ' id from '+ table_name +'  where IsChange=0);'
-            self.cursor.execute(self._sql)
+            self._sql = "select sum(" + sum_name + ")," + group_name + "  from " + table_name + " where uid in (" + ','.join(
+                ['%s' for uid in uid_list]) + ") group by " + group_name + ";"
+            self.cursor.execute(self._sql, uid_list)
             result = self.cursor.fetchall()
             return result
         except Exception as e:
+            print(e)
+            return None
+
+    def select_group_avg(self, table_name, uid_list, group_name, avg_name):
+        '''
+        分组查询平均值
+        :param table_name: 表名
+        :param uid_list: 抓取id的列表
+        :param group_name:分组字段
+        :param sum_name:均值字段
+        :return:查询结果
+        '''
+        try:
+            self._sql = "select avg(" + avg_name + ") as avg_m," + group_name + "  from " + table_name + " where uid in (" + ','.join(
+                ['%s' for uid in uid_list]) + ") group by " + group_name + ";"
+            self.cursor.execute(self._sql, uid_list)
+            result = self.cursor.fetchall()
+            return result
+        except Exception as e:
+            print(e)
+            return None
+
+    def select_two_fields(self, table_name, uid_list, field1, field2):
+        '''
+        查询2个字段
+        :param table_name: 表名
+        :param uid_list: 抓取id的列表
+        :param field1: 字段名
+        :param field2: 字段名
+        :return:查询结果
+        '''
+        try:
+            self._sql = "select " + field1 + "," + field2 + " from " + table_name + " where uid in (" + ','.join(
+                ['%s' for uid in uid_list]) + ");"
+            self.cursor.execute(self._sql, uid_list)
+            result = self.cursor.fetchall()
+            return result
+        except Exception as e:
+            print(e)
+            return None
+
+    def select_group_top10_sum(self, table_name, uid_list, group_name, sum_name):
+        '''
+        分组查询求和
+        :param table_name: 表名
+        :param uid_list: 抓取id的列表
+        :param group_name:分组字段
+        :param sum_name:求和字段
+        :return:查询结果
+        '''
+        try:
+            self._sql = "select sum(" + sum_name + ")," + group_name + "  from " + table_name + " where uid in (" + ','.join(
+                ['%s' for uid in uid_list]) + ") group by " + group_name + " order by sum(sales) desc limit 0,10;"
+            self.cursor.execute(self._sql, uid_list)
+            result = self.cursor.fetchall()
+            return result
+        except Exception as e:
+            print(e)
+            return None
+
+    def select_group_top10_avg(self, table_name, uid_list, group_name, avg_name):
+        '''
+        分组查询求和
+        :param table_name: 表名
+        :param uid_list: 抓取id的列表
+        :param group_name:分组字段
+        :param sum_name:均值字段
+        :return:查询结果
+        '''
+        try:
+            self._sql = "select avg(" + avg_name + ")," + group_name + "  from " + table_name + " where uid in (" + ','.join(
+                ['%s' for uid in uid_list]) + ") group by " + group_name + " order by sum(sales) desc limit 0,10;"
+            self.cursor.execute(self._sql, uid_list)
+            result = self.cursor.fetchall()
+            return result
+        except Exception as e:
+            print(e)
             return None
 
     def insert_many(self, table_name, obj_list):
@@ -177,49 +263,3 @@ class db_class():
     def close(self):
         self.cursor.close()
         self.conn.close()
-
-
-if __name__ == '__main__':
-    mysql_obj = db_class()
-    mysql_obj.open()
-    table_name = 'news_table'
-
-    # 插入示例
-    obj1 = {
-        'title': '热点',
-        'content': '透彻小助手',
-        'author': '小李',
-        'keyword': '新闻'
-    }
-    obj2 = {
-        'title': '看',
-        'content': '等大',
-        'author': '小李',
-        'keyword': '新闻'
-    }
-    result = mysql_obj.insert_many(table_name, [obj1, obj2])
-    print(result)
-
-    # 更新示例
-    obj1 = {
-        'author': 'AA',
-        'keyword': '新闻'
-    }
-    obj2 = {
-        'author': 'AA',
-        'keyword': '简讯'
-    }
-    id_list = ['3', '4']
-    result = mysql_obj.update_many(table_name, [obj1, obj2], [{'id': id} for id in id_list])
-    print(result)
-
-    # 删除示例
-    id_list = ['3', '4']
-    result = mysql_obj.delete_many(table_name, [{'id': id, 'author': 'AA'} for id in id_list])
-    print(result)
-
-    # 条件查询示例
-    result = mysql_obj.select_condition('news_table', {'author': '小李', 'keyword': '新闻'})
-    print(result)
-
-    mysql_obj.close()
