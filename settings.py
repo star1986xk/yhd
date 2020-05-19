@@ -1,7 +1,7 @@
 SQL = {
-    'host': '47.52.38.70',
-    'user': 'star1986xk',
-    'password': 'good1234',
+    'host': 'xx.xx.xx.xx',
+    'user': 'xxx',
+    'password': 'xxx',
     'database': 'yhd',
     'charset': 'utf8'
 }
